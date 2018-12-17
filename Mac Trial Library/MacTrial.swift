@@ -17,13 +17,61 @@ import Foundation
 /// In unit tests it will be:
 /// `/Users/paulsolt/Library/Application%20Support/`
 ///
-func applicationSupportURL() -> URL {
-    return try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-    
+
+
+func isUnitTestDirectory() -> Bool {
+    if ProcessInfo.processInfo.environment.keys.contains("XCTestConfigurationFilePath") {
+        return true
+    }
+    return false
 }
 
+func applicationSupportURL(isTestDirectory: Bool = isUnitTestDirectory()) -> URL {
+    return try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+}
+
+
+    
+    // For each test
+    // Create a temporary directory
+    // Run the test
+
+class MacUnitTestHelper {
+    var testDirectory: URL
+    var fileManager = FileManager.default
+    
+    init() {
+//        Bundle.main.
+        testDirectory = URL(fileURLWithPath: "empty")
+        createUnitTestDirectory()
+    }
+    
+    
+    func createUnitTestDirectory(url: URL = FileManager.default.temporaryDirectory) {
+        self.testDirectory = url
+    }
+    
+    func clearUnitTestDirectory() {
+        do {
+            try fileManager.removeItem(at: testDirectory)
+        } catch {
+            print("Error removing the test directory: \(testDirectory)")
+        }
+    }
+}
+
+func createTestDirectory() {
+    
+}
+func testDirectory() -> URL {
+    return FileManager.default.temporaryDirectory
+}
+
+
+
+
 struct Constants {
-    static let settingsFilename = "settings"
+    static let settingsFilename = "settings.json" // TODO: Change to settings for "security"
     struct Default {
         static let days = 7
     }
@@ -31,10 +79,14 @@ struct Constants {
 
 open class MacTrial {
 
+    public static var settingsDirectory: URL = {
+        return applicationSupportURL().appendingPathComponent("settings", isDirectory: true)
+    }()
+    
     /// The full path to the settings file in Application Support
     /// 
-    open var settingsURL: URL = {
-        return applicationSupportURL().appendingPathComponent(Constants.settingsFilename)
+    public static var settingsURL: URL = {
+        return settingsDirectory.appendingPathComponent(Constants.settingsFilename)
     }()
     
     /// Create a Codable struct
@@ -44,6 +96,16 @@ open class MacTrial {
     /// If already saved, then load and check valid
     /// Provide a boolean check to know if app is expiried or not
     
+    
+    static func loadSettings() throws -> TrialSettings {
+        let decoder = JSONDecoder()
+//        decoder.dateDecodingStrategy = .secondsSince1970
+        
+        let data = try Data(contentsOf: settingsURL)
+        
+        let settings = try decoder.decode(TrialSettings.self, from: data)
+        return settings
+    }
 }
 
 
@@ -57,7 +119,11 @@ func createDate(byAddingDays days: Int, to date: Date) -> Date {
 struct TrialSettings: Codable, Equatable {
     var dateInstalled: Date
     var dateExpired: Date
-    var trialPeriodInDays: Int
+    var trialPeriodInDays: Int {
+        didSet {
+            dateExpired = createDate(byAddingDays: trialPeriodInDays, to: dateInstalled)
+        }
+    }
     
     init(dateInstalled: Date = Date(), trialPeriodInDays days: Int = Constants.Default.days) {
         self.dateInstalled = dateInstalled
@@ -65,4 +131,5 @@ struct TrialSettings: Codable, Equatable {
         self.dateExpired = createDate(byAddingDays: days, to: dateInstalled)
     }
     
+
 }
