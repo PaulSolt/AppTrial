@@ -18,8 +18,9 @@ import Foundation
 /// `/Users/paulsolt/Library/Application%20Support/`
 ///
 
-
-func isUnitTestDirectory() -> Bool {
+/// Helper to know when running a unit test versus test code or actual code
+/// in an app bundle
+func isUnitTest() -> Bool {
     if ProcessInfo.processInfo.environment.keys.contains("XCTestConfigurationFilePath") {
         return true
     }
@@ -84,30 +85,26 @@ open class MacTrial {
     }()
     
     /// The full path to the settings file in Application Support
-    /// 
     public static var settingsURL: URL = {
         return settingsDirectory.appendingPathComponent(Constants.settingsFilename)
     }()
     
-    /// Create a Codable struct
-    /// Save to disk
-    /// Load from disk
-    /// Save to disk on first start (init)
-    /// If already saved, then load and check valid
-    /// Provide a boolean check to know if app is expiried or not
-    
-    
     static func loadSettings() throws -> TrialSettings {
+        let data = try loadSettingsFrom(url: settingsURL)
+        let settings = try decodeSettings(from: data)
+        return settings
+    }
+    
+    static func loadSettingsFrom(url: URL) throws -> Data {
+        return try Data(contentsOf: settingsURL)
+    }
+    
+    static func decodeSettings(from data: Data) throws -> TrialSettings {
         let decoder = JSONDecoder()
-//        decoder.dateDecodingStrategy = .secondsSince1970
-        
-        let data = try Data(contentsOf: settingsURL)
-        
         let settings = try decoder.decode(TrialSettings.self, from: data)
         return settings
     }
 }
-
 
 /// NOTE: In some situtations with different calendars or end time scenarios
 /// this may fail, but it should work for small offsets between 7-365 days
@@ -130,6 +127,4 @@ struct TrialSettings: Codable, Equatable {
         self.trialPeriodInDays = days
         self.dateExpired = createDate(byAddingDays: days, to: dateInstalled)
     }
-    
-
 }

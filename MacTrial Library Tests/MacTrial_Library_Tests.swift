@@ -9,6 +9,13 @@
 import XCTest
 @testable import Mac_Trial_Library
 
+
+class TestDirectory_Tests: XCTestCase {
+    
+    
+    
+}
+
 class MacTrial_Library_Tests: XCTestCase {
     
     var days = 7
@@ -155,13 +162,21 @@ class MacTrial_Library_Tests: XCTestCase {
     func testChangeTrialPeriodShouldUpdateDateExpired() {
         var trialSettings = TrialSettings(dateInstalled: dateInstalled, trialPeriodInDays: Constants.Default.days)
         let newDays = 30
-        var expectedDate = createDate(byAddingDays: newDays, to: dateInstalled)
+        let expectedDate = createDate(byAddingDays: newDays, to: dateInstalled)
         
         trialSettings.trialPeriodInDays = newDays
         
         XCTAssertEqual(expectedDate, trialSettings.dateExpired)
     }
     
+    // TODO:
+    /// TODO:
+    /// Load from disk
+    /// Save to disk on first start (init)
+    /// If already saved, then load and check valid
+    /// Provide a boolean check to know if app is expiried or not
+
+    // Check if the trial has expired
     
     // Extend the trial period
     // Track number of opens
