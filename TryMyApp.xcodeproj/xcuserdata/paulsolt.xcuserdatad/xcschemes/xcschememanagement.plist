@@ -4,27 +4,22 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>Mac Trial Demo.xcscheme_^#shared#^_</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>0</integer>
-		</dict>
-		<key>Mac Trial Library.xcscheme_^#shared#^_</key>
-		<dict>
-			<key>orderHint</key>
-			<integer>1</integer>
-		</dict>
 		<key>Mac Trial Tests.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>2</integer>
 		</dict>
-		<key>Mac Trial.xcscheme_^#shared#^_</key>
+		<key>TryMyApp.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>3</integer>
+			<integer>1</integer>
 		</dict>
-		<key>MacTrial Library Tests.xcscheme_^#shared#^_</key>
+		<key>TryMyAppDemo.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>0</integer>
+		</dict>
+		<key>TryMyAppTests.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
 			<integer>2</integer>
@@ -48,6 +43,16 @@
 			<true/>
 		</dict>
 		<key>BD9F1EBC21BCAACA003516CD</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BDC1C3AB21C95ABC008342F6</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BDC1C3CB21C95B6E008342F6</key>
 		<dict>
 			<key>primary</key>
 			<true/>

@@ -17,6 +17,9 @@ import Foundation
 /// In unit tests it will be:
 /// `/Users/paulsolt/Library/Application%20Support/`
 ///
+func applicationSupportURL(isTestDirectory: Bool = isUnitTest()) -> URL {
+    return try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+}
 
 /// Helper to know when running a unit test versus test code or actual code
 /// in an app bundle
@@ -27,12 +30,6 @@ func isUnitTest() -> Bool {
     return false
 }
 
-func applicationSupportURL(isTestDirectory: Bool = isUnitTest()) -> URL {
-    return try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-}
-
-
-    
     // For each test
     // Create a temporary directory
     // Run the test
@@ -78,8 +75,12 @@ struct Constants {
     }
 }
 
-open class MacTrial {
+open class TryMyApp {
 
+    public init() {
+        
+    }
+    
     public static var settingsDirectory: URL = {
         return applicationSupportURL().appendingPathComponent("settings", isDirectory: true)
     }()
@@ -89,9 +90,15 @@ open class MacTrial {
         return settingsDirectory.appendingPathComponent(Constants.settingsFilename)
     }()
     
-    static func loadSettings() throws -> TrialSettings {
+    public static func loadSettings() throws -> TrialSettings {
         let data = try loadSettingsFrom(url: settingsURL)
         return try decodeSettings(from: data)
+    }
+    
+    public static func saveSettings(settings: TrialSettings) throws {
+        let data = try encodeSettings(settings: settings)
+        try createSettingsDirectoryIfMissing()
+        try saveSettings(data: data, to: settingsURL)
     }
     
     fileprivate static func loadSettingsFrom(url: URL) throws -> Data {
@@ -101,12 +108,6 @@ open class MacTrial {
     fileprivate static func decodeSettings(from data: Data) throws -> TrialSettings {
         let decoder = JSONDecoder()
         return try decoder.decode(TrialSettings.self, from: data)
-    }
-    
-    static func saveSettings(settings: TrialSettings) throws {
-        let data = try encodeSettings(settings: settings)
-        try createSettingsDirectoryIfMissing()
-        try saveSettings(data: data, to: settingsURL)
     }
     
     fileprivate static func encodeSettings(settings: TrialSettings) throws -> Data {
@@ -125,7 +126,7 @@ open class MacTrial {
     }
     
     fileprivate static func createSettingsDirectory() throws {
-        try FileManager.default.createDirectory(atPath: MacTrial.settingsDirectory.path, withIntermediateDirectories: true, attributes: nil)
+        try FileManager.default.createDirectory(atPath: TryMyApp.settingsDirectory.path, withIntermediateDirectories: true, attributes: nil)
     }
 
     fileprivate static func saveSettings(data: Data, to url: URL) throws {
@@ -144,7 +145,7 @@ func createDate(byAddingDays days: Int, to date: Date) -> Date {
 }
 
 /// Settings structure for tracking trial period in an app
-struct TrialSettings: Codable, Equatable {
+public struct TrialSettings: Codable, Equatable {
     var dateInstalled: Date
     var dateExpired: Date
     var trialPeriodInDays: Int {
