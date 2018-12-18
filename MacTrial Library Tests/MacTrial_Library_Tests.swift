@@ -73,12 +73,20 @@ class MacTrial_Library_Tests: XCTestCase {
     }
     
     
-    func testCreateUnitTestDirectory() {
-//        settings
+    func testCreateTestDirectory() {
+        removeTestDirectory()
+        
+        createTestDirectory()
+        
+        XCTAssertTrue(fileManager.fileExists(atPath: testDirectory().path))
     }
     
-    func testCleanupUnitTestDirectory() {
+    func testRemoveTestDirectory() {
+        XCTAssertTrue(fileManager.fileExists(atPath: testDirectory().path))
         
+        removeTestDirectory()
+        
+        XCTAssertFalse(fileManager.fileExists(atPath: testDirectory().path))
     }
     
     
@@ -145,18 +153,16 @@ class MacTrial_Library_Tests: XCTestCase {
         var trialSettings = TrialSettings()
         trialSettings.trialPeriodInDays = 20
         
-        let data = try! encoder.encode(trialSettings)
-        let url = applicationSupportURL().appendingPathComponent(Constants.settingsFilename)
-        try! data.write(to: url, options: .atomicWrite)
-        
         do {
+            let data = try encoder.encode(trialSettings)
+            try data.write(to: MacTrial.settingsURL, options: .atomicWrite)
+        
             let loadedSettings = try MacTrial.loadSettings()
+            
             XCTAssertEqual(trialSettings, loadedSettings)
         } catch {
-            print("Failed to load TrialSettings from disk")
+            print("Failed to load TrialSettings from disk \(error)")
         }
-        
-        // TODO: Cleanup file between tests
     }
     
     func testChangeTrialPeriodShouldUpdateDateExpired() {
@@ -167,6 +173,35 @@ class MacTrial_Library_Tests: XCTestCase {
         trialSettings.trialPeriodInDays = newDays
         
         XCTAssertEqual(expectedDate, trialSettings.dateExpired)
+    }
+    
+    func testSaveSettings() {
+        var trialSettings = TrialSettings()
+        trialSettings.trialPeriodInDays = 17
+        
+        do {
+            try MacTrial.saveSettings(settings: trialSettings)
+
+            let loadedSettings = try MacTrial.loadSettings()
+            XCTAssertEqual(trialSettings, loadedSettings)
+        } catch {
+            XCTFail("Failed to load or save settings: \(error)")
+        }
+    }
+    
+    func testSaveSettingsCreatesDirectoryIfItDoesNotExist() {
+        var trialSettings = TrialSettings()
+        trialSettings.trialPeriodInDays = 17
+        removeTestDirectory()
+        
+        do {
+            try MacTrial.saveSettings(settings: trialSettings)
+
+            XCTAssertTrue(fileManager.fileExists(atPath: MacTrial.settingsDirectory.path))
+            XCTAssertTrue(fileManager.fileExists(atPath: MacTrial.settingsURL.path))
+        } catch {
+            XCTFail("Failed to create save folder: \(error)")
+        }
     }
     
     // TODO:

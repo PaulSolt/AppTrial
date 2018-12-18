@@ -27,7 +27,7 @@ func isUnitTest() -> Bool {
     return false
 }
 
-func applicationSupportURL(isTestDirectory: Bool = isUnitTestDirectory()) -> URL {
+func applicationSupportURL(isTestDirectory: Bool = isUnitTest()) -> URL {
     return try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
 }
 
@@ -91,19 +91,50 @@ open class MacTrial {
     
     static func loadSettings() throws -> TrialSettings {
         let data = try loadSettingsFrom(url: settingsURL)
-        let settings = try decodeSettings(from: data)
-        return settings
+        return try decodeSettings(from: data)
     }
     
-    static func loadSettingsFrom(url: URL) throws -> Data {
+    fileprivate static func loadSettingsFrom(url: URL) throws -> Data {
         return try Data(contentsOf: settingsURL)
     }
     
-    static func decodeSettings(from data: Data) throws -> TrialSettings {
+    fileprivate static func decodeSettings(from data: Data) throws -> TrialSettings {
         let decoder = JSONDecoder()
-        let settings = try decoder.decode(TrialSettings.self, from: data)
-        return settings
+        return try decoder.decode(TrialSettings.self, from: data)
     }
+    
+    static func saveSettings(settings: TrialSettings) throws {
+        let data = try encodeSettings(settings: settings)
+        try createSettingsDirectoryIfMissing()
+        try saveSettings(data: data, to: settingsURL)
+    }
+    
+    fileprivate static func encodeSettings(settings: TrialSettings) throws -> Data {
+        let encoder = JSONEncoder()
+        return try encoder.encode(settings)
+    }
+    
+    fileprivate static func createSettingsDirectoryIfMissing() throws {
+        if !doesSettingsDirectoryExist() {
+            try createSettingsDirectory()
+        }
+    }
+    
+    fileprivate static func doesSettingsDirectoryExist() -> Bool {
+        return FileManager.default.fileExists(atPath: settingsDirectory.path)
+    }
+    
+    fileprivate static func createSettingsDirectory() throws {
+        try FileManager.default.createDirectory(atPath: MacTrial.settingsDirectory.path, withIntermediateDirectories: true, attributes: nil)
+    }
+
+    fileprivate static func saveSettings(data: Data, to url: URL) throws {
+        try data.write(to: url, options: .atomic)
+    }
+    
+    
+    
+    
 }
 
 /// NOTE: In some situtations with different calendars or end time scenarios
