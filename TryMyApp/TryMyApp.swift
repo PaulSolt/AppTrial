@@ -52,7 +52,7 @@ open class TryMyApp {
     }()
     
     public static func loadSettings() throws -> TrialSettings {
-        if settingsDoesExist() {
+        if settingsExists() {
             let data = try loadSettingsFrom(url: settingsURL)
             return try decodeSettings(from: data)
         } else {
@@ -64,18 +64,8 @@ open class TryMyApp {
     // in more familar patters?
     // settingsDoesExist() vs. isThereSavedSettings vs. isFirstTimeLaunched ...?
     
-    fileprivate static func settingsDoesExist() -> Bool {
+    fileprivate static func settingsExists() -> Bool {
         return FileManager.default.fileExists(atPath: settingsURL.path)
-    }
-    
-    fileprivate static func createDefaultSettings() -> TrialSettings {
-        return TrialSettings(dateInstalled: dateGenerator(), trialPeriodInDays: Constants.Default.days)
-    }
-    
-    public static func saveSettings(settings: TrialSettings) throws {
-        let data = try encodeSettings(settings: settings)
-        try createSettingsDirectoryIfMissing()
-        try saveSettings(data: data, to: settingsURL)
     }
     
     fileprivate static func loadSettingsFrom(url: URL) throws -> Data {
@@ -86,6 +76,16 @@ open class TryMyApp {
         let decoder = JSONDecoder()
         return try decoder.decode(TrialSettings.self, from: data)
     }
+
+    fileprivate static func createDefaultSettings() -> TrialSettings {
+        return TrialSettings(dateInstalled: dateGenerator(), trialPeriodInDays: Constants.Default.days)
+    }
+    
+    public static func saveSettings(settings: TrialSettings) throws {
+        let data = try encodeSettings(settings: settings)
+        try createSettingsDirectoryIfMissing()
+        try saveSettings(data: data, to: settingsURL)
+    }
     
     fileprivate static func encodeSettings(settings: TrialSettings) throws -> Data {
         let encoder = JSONEncoder()
@@ -93,12 +93,12 @@ open class TryMyApp {
     }
     
     fileprivate static func createSettingsDirectoryIfMissing() throws {
-        if !doesSettingsDirectoryExist() {
+        if !settingsDirectoryExists() {
             try createSettingsDirectory()
         }
     }
     
-    fileprivate static func doesSettingsDirectoryExist() -> Bool {
+    fileprivate static func settingsDirectoryExists() -> Bool {
         return FileManager.default.fileExists(atPath: settingsDirectory.path)
     }
     
