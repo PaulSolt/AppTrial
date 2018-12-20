@@ -30,69 +30,46 @@ func isUnitTest() -> Bool {
     return false
 }
 
-    // For each test
-    // Create a temporary directory
-    // Run the test
-
-class MacUnitTestHelper {
-    var testDirectory: URL
-    var fileManager = FileManager.default
-    
-    init() {
-//        Bundle.main.
-        testDirectory = URL(fileURLWithPath: "empty")
-        createUnitTestDirectory()
-    }
-    
-    
-    func createUnitTestDirectory(url: URL = FileManager.default.temporaryDirectory) {
-        self.testDirectory = url
-    }
-    
-    func clearUnitTestDirectory() {
-        do {
-            try fileManager.removeItem(at: testDirectory)
-        } catch {
-            print("Error removing the test directory: \(testDirectory)")
-        }
-    }
-}
-
-func createTestDirectory() {
-    
-}
-func testDirectory() -> URL {
-    return FileManager.default.temporaryDirectory
-}
-
-
-
-
-struct Constants {
-    static let settingsFilename = "settings.json" // TODO: Change to settings for "security"
-    struct Default {
-        static let days = 7
-    }
-}
+typealias DateGenerator = () -> Date
 
 open class TryMyApp {
 
+    static var dateGenerator: DateGenerator = Date.init
+    
+    // TODO: Doesn't do anything ... should these things not be static?
     public init() {
         
     }
     
+    /// The settings directory is stored in the Application Support folder
     public static var settingsDirectory: URL = {
-        return applicationSupportURL().appendingPathComponent("settings", isDirectory: true)
+        return applicationSupportURL().appendingPathComponent(Constants.settingsDirectory, isDirectory: true)
     }()
     
-    /// The full path to the settings file in Application Support
+    /// The file location of the saved state
     public static var settingsURL: URL = {
         return settingsDirectory.appendingPathComponent(Constants.settingsFilename)
     }()
     
     public static func loadSettings() throws -> TrialSettings {
-        let data = try loadSettingsFrom(url: settingsURL)
-        return try decodeSettings(from: data)
+        if settingsDoesExist() {
+            let data = try loadSettingsFrom(url: settingsURL)
+            return try decodeSettings(from: data)
+        } else {
+            return createDefaultSettings()
+        }
+    }
+    
+    // QUESTION: for boolean checks, should they read better,  or should I use verbs
+    // in more familar patters?
+    // settingsDoesExist() vs. isThereSavedSettings vs. isFirstTimeLaunched ...?
+    
+    fileprivate static func settingsDoesExist() -> Bool {
+        return FileManager.default.fileExists(atPath: settingsURL.path)
+    }
+    
+    fileprivate static func createDefaultSettings() -> TrialSettings {
+        return TrialSettings(dateInstalled: dateGenerator(), trialPeriodInDays: Constants.Default.days)
     }
     
     public static func saveSettings(settings: TrialSettings) throws {
@@ -132,10 +109,6 @@ open class TryMyApp {
     fileprivate static func saveSettings(data: Data, to url: URL) throws {
         try data.write(to: url, options: .atomic)
     }
-    
-    
-    
-    
 }
 
 /// NOTE: In some situtations with different calendars or end time scenarios
@@ -150,7 +123,7 @@ public struct TrialSettings: Codable, Equatable {
     var dateExpired: Date
     var trialPeriodInDays: Int {
         didSet {
-            dateExpired = createDate(byAddingDays: trialPeriodInDays, to: dateInstalled)
+            changeTrialDuration(to: trialPeriodInDays)
         }
     }
     
@@ -158,5 +131,9 @@ public struct TrialSettings: Codable, Equatable {
         self.dateInstalled = dateInstalled
         self.trialPeriodInDays = days
         self.dateExpired = createDate(byAddingDays: days, to: dateInstalled)
+    }
+    
+    private mutating func changeTrialDuration(to days: Int) {
+        dateExpired = createDate(byAddingDays: trialPeriodInDays, to: dateInstalled)
     }
 }

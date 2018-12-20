@@ -28,8 +28,6 @@ class TryMyAppTests: XCTestCase {
         fileManager = FileManager()
         // create settings directory
         
-        
-        
         setupTestDirectory()
         
     }
@@ -138,14 +136,6 @@ class TryMyAppTests: XCTestCase {
         }
     }
     
-    
-    // Test Helpers
-    
-    //    func createTrialSettings(dateInstalled: Date = Date(), days: Int = Constants.Default.days) -> TrialSettings {
-    //        let settings = TrialSettings(dateInstalled: dateInstalled, trialPeriodInDays: days)
-    //        return settings
-    //    }
-    
     func testLoadSettings() {
         var trialSettings = TrialSettings()
         trialSettings.trialPeriodInDays = 20
@@ -201,14 +191,32 @@ class TryMyAppTests: XCTestCase {
         }
     }
     
+    /// A testing class to step forward in time so that we can
+    // verify date logic
+    class TimeTraveler {
+        var date = Date()
+
+        func generateDate() -> Date {
+            return date
+        }
+        
+        func timeTravel(bySeconds seconds: TimeInterval) {
+            date = date.addingTimeInterval(seconds)
+        }
+    }
+    
+    /// Testing time based logic requires the ability to share the same date, or
+    /// method for generating dates
     func testLoadSettingsCreatesDefaultIfItDoesNotExist() {
-        var expectedSettings = TrialSettings()
+        let timeTraveler = TimeTraveler()
+        TryMyApp.dateGenerator = timeTraveler.generateDate
+        var expectedSettings = TrialSettings(dateInstalled: timeTraveler.date)
         expectedSettings.trialPeriodInDays = Constants.Default.days
         removeTestDirectory()
         
         do {
             let loadedSettings = try TryMyApp.loadSettings()
-//            XCTAssertTrue(fileManager.fileExists(atPath: TryMyApp.settingsDirectory.path))
+            
             XCTAssertEqual(expectedSettings, loadedSettings)
         } catch {
             XCTFail("Default settings need to be loaded on first try")
@@ -216,17 +224,12 @@ class TryMyAppTests: XCTestCase {
     }
     
     
-    // TODO:
     /// TODO:
-    /// Load from disk
-    /// Save to disk on first start (init)
-    /// If already saved, then load and check valid
-    /// Provide a boolean check to know if app is expiried or not
-    
-    // Check if the trial has expired
-    
-    // Extend the trial period
-    // Track number of opens
-    // Track number of uses
-    // Track number of social shares for extensions
+    /// TODO: App Load from disk
+    /// TODO: App Save to disk on first start (init)
+    /// TODO: If already saved, then load and check valid
+    /// TODO: Provide a boolean check() to know if app is expiried or not
+    // TODO: Track number of opens
+    // TODO: Track number of uses
+    // TODO: Track number of social shares for extensions (Or just extend based on action)
 }
