@@ -9,7 +9,7 @@ The goal isn't security, since that's a hard moving target, instead it's to make
 
 So that the vast majority of your users will take the call to action (CTA) to upgrade to the full version, either by linking directly to the paid app on the [Mac App Store](https://paddle.com), or using a service like Paddle to sell a license key.
 
-I'm building this for my Super Easy Timer app, which was previously using a build date, but it's annoying to rebuild every X months, so I want this to track time using a timeframe (i.e.: 7 days).
+I'm building this for my [Super Easy Timer](https://itunes.apple.com/us/app/super-easy-timer/id1353137878?ls=1&mt=12) app, which was previously using a build date, but it's annoying to rebuild every X months, so I want this to track time using a timeframe (i.e.: 7 days).
 
 There are more "secure" ways (keychain) to prevent users from tampering with the "install date", but I'm not worried about that for my first release.
 
