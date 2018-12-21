@@ -76,7 +76,7 @@ open class TryMyApp {
         let decoder = JSONDecoder()
         return try decoder.decode(TrialSettings.self, from: data)
     }
-
+ 
     fileprivate static func createDefaultSettings() -> TrialSettings {
         return TrialSettings(dateInstalled: dateGenerator(), trialPeriodInDays: Constants.Default.days)
     }
