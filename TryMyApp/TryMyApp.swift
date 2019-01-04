@@ -37,14 +37,15 @@ open class TryMyApp {
     static var dateGenerator: DateGenerator = Date.init
     
     // TODO: Doesn't do anything ... should these things not be static?
-    public init() {
+    public init(settingsDirectory: URL = settingsDirectory) {
         
     }
     
     /// The settings directory is stored in the Application Support folder
-    public static var settingsDirectory: URL = {
-        return applicationSupportURL().appendingPathComponent(Constants.settingsDirectory, isDirectory: true)
-    }()
+    public static var settingsDirectory: URL = applicationSupportURL().appendingPathComponent(Constants.settingsDirectory, isDirectory: true)
+//    public static var settingsDirectory: URL = {
+//        return applicationSupportURL().appendingPathComponent(Constants.settingsDirectory, isDirectory: true)
+//    }()
     
     /// The file location of the saved state
     public static var settingsURL: URL = {

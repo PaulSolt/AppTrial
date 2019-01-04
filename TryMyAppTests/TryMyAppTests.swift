@@ -148,7 +148,22 @@ class TryMyAppTests: XCTestCase {
             
             XCTAssertEqual(trialSettings, loadedSettings)
         } catch {
-            print("Failed to load TrialSettings from disk \(error)")
+            XCTFail("Failed to load TrialSettings from disk: \(error)")
+        }
+    }
+    
+    func testLoadSettingsWithoutSavedFile() {
+        let timeTraveler = TimeTraveler()
+        
+        let defaultSettings = TrialSettings(dateInstalled: timeTraveler.date)
+        TryMyApp.dateGenerator = timeTraveler.generateDate
+        
+        do {
+            let loadedSettings = try TryMyApp.loadSettings()
+            
+            XCTAssertEqual(defaultSettings, loadedSettings)
+        } catch {
+            XCTFail("Failed to load TrialSettings from disk: \(error)")
         }
     }
     
