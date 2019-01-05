@@ -240,7 +240,7 @@ class TryMyAppTests: XCTestCase {
         let settings = TrialSettings(dateInstalled: timeTraveler.date, trialPeriodInDays: days)
         try! tryMyApp.saveSettings(settings: settings)
         
-        XCTAssertFalse(try! tryMyApp.isExpired())
+        XCTAssertFalse(tryMyApp.isExpired())
     }
     
     func testTrialSettingsIsNotExpiredAfter7Days() {
@@ -248,7 +248,7 @@ class TryMyAppTests: XCTestCase {
         try! tryMyApp.saveSettings(settings: settings)
         timeTraveler.timeTravel(byDays: 7)
         
-        XCTAssertFalse(try! tryMyApp.isExpired())
+        XCTAssertFalse(tryMyApp.isExpired())
     }
     
     func testTrialSettingsIsExpiredAfter7DaysPlus1Second() {
@@ -257,14 +257,58 @@ class TryMyAppTests: XCTestCase {
         timeTraveler.timeTravel(byDays: 7)
         timeTraveler.timeTravel(bySeconds: 1)
         
-        XCTAssertTrue(try! tryMyApp.isExpired())
-        
+        XCTAssertTrue(tryMyApp.isExpired())
     }
     
-    /// TODO: App Load from disk
-    /// TODO: App Save to disk on first start (init)
-    /// TODO: If already saved, then load and check valid
-    /// TODO: Provide a boolean check() to know if app is expiried or not
+    func testTrialSettingsExtendedBy20Days() {
+        let settings = TrialSettings(dateInstalled: timeTraveler.date, trialPeriodInDays: 7)
+        let expectedSettings = TrialSettings(dateInstalled: timeTraveler.date, trialPeriodInDays: 27)
+        
+        let actualSettings = settings.extended(byAddingDays: 20)
+        
+        XCTAssertEqual(expectedSettings, actualSettings)
+    }
+    
+    func testExtendTrialByAdding30DaysAndSavesToDisk() {
+        let totalDays = tryMyApp.settings.trialPeriodInDays + 30
+        let expectedExpired = createDate(byAddingDays: totalDays, to: tryMyApp.settings.dateInstalled)
+        tryMyApp.extendTrial(byAdding: 30)
+        
+        XCTAssertEqual(expectedExpired, tryMyApp.dateExpired())
+        
+        do {
+            let loadedSettings = try tryMyApp.loadSettings()
+            XCTAssertEqual(expectedExpired, loadedSettings.dateExpired)
+        } catch {
+            XCTFail("Loading settings failed")
+        }
+    }
+    
+    func testDaysRemainingAfterTimeTraveling() {
+        timeTraveler.timeTravel(byDays: 2)
+        XCTAssertEqual(5, tryMyApp.daysRemaining())
+        
+        timeTraveler.timeTravel(bySeconds: 1)
+        XCTAssertEqual(4, tryMyApp.daysRemaining())
+
+        timeTraveler.timeTravel(bySeconds: -2)
+        XCTAssertEqual(5, tryMyApp.daysRemaining())
+
+        timeTraveler.timeTravel(bySeconds: 1)
+        XCTAssertEqual(5, tryMyApp.daysRemaining())
+
+        timeTraveler.timeTravel(byDays: 2)
+        XCTAssertEqual(3, tryMyApp.daysRemaining())
+        
+        timeTraveler.timeTravel(byDays: 3)
+        XCTAssertEqual(0, tryMyApp.daysRemaining())
+        
+        timeTraveler.timeTravel(byDays: 1)
+        timeTraveler.timeTravel(bySeconds: 1)
+        XCTAssertEqual(-1, tryMyApp.daysRemaining())
+    }
+    
+    
     // TODO: Track number of opens
     // TODO: Track number of uses
     // TODO: Track number of social shares for extensions (Or just extend based on action)

@@ -22,10 +22,7 @@ class ViewController: NSViewController {
             print("Not expired: \(trial.dateExpired())\n Now: \(Date())")
         }
         
-        let url = try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        
-        
-        print("URL: \(url)")
+//        trial.sett
     }
 
 }
