@@ -16,13 +16,11 @@ class ViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-//        let trial = TryMyApp()
-//        do {
-//            trial = try TryMyApp.loadSettings()
-//        } catch {
-//            
-//        }
-        
+        if trial.isExpired() {
+            print("Expired Trial: \(trial.dateExpired())\n Now \(Date())")
+        } else {
+            print("Not expired: \(trial.dateExpired())\n Now: \(Date())")
+        }
         
         let url = try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
         

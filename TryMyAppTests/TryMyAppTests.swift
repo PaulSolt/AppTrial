@@ -12,24 +12,48 @@ import XCTest
 
 @testable import TryMyApp
 
+/// A testing class to step forward in time so that we can
+// verify date logic
+class TimeTraveler {
+    private let daysInSeconds: TimeInterval = 86_400
+    
+    var date = Date()
+    
+    func generateDate() -> Date {
+        return date
+    }
+    
+    func timeTravel(bySeconds seconds: TimeInterval) {
+        date = date.addingTimeInterval(seconds)
+    }
+    
+    func timeTravel(byDays days: Int) {
+        date = date.addingTimeInterval(daysInSeconds * TimeInterval(days))
+    }
+}
+
 class TryMyAppTests: XCTestCase {
     
-    var days = 7
+    var days = 14
     var dateInstalled = Date()
     
     var encoder = JSONEncoder()
     var decoder = JSONDecoder()
     var fileManager = FileManager()
     
+    var timeTraveler = TimeTraveler()
+    var tryMyApp = TryMyApp()
+    
     override func setUp() {
         encoder = JSONEncoder()
         decoder = JSONDecoder()
         dateInstalled = Date()
         fileManager = FileManager()
-        // create settings directory
+        timeTraveler = TimeTraveler()
+        tryMyApp = TryMyApp()
+        tryMyApp.dateGenerator = timeTraveler.generateDate
         
         setupTestDirectory()
-        
     }
     
     override func tearDown() {
@@ -37,7 +61,7 @@ class TryMyAppTests: XCTestCase {
     }
     
     func testDirectory() -> URL {
-        return TryMyApp.settingsDirectory
+        return tryMyApp.settingsFile.deletingLastPathComponent()
     }
     
     func setupTestDirectory() {
@@ -86,12 +110,8 @@ class TryMyAppTests: XCTestCase {
     
     
     func testSaveFile() {
-        let string = "BLAH"
-        
-        let settingsURL = TryMyApp.settingsDirectory.appendingPathComponent(Constants.settingsFilename)
-        
-        print("Save: \(settingsURL)")
-        print("Save path: \(settingsURL.path)")
+        let string = "save me to disk"
+        let settingsURL = tryMyApp.settingsFile
         
         do {
             try string.write(to: settingsURL, atomically: true, encoding: .utf8)
@@ -105,7 +125,6 @@ class TryMyAppTests: XCTestCase {
         } catch {
             print("ERROR: loading file: \(settingsURL) \(error)")
         }
-        print("INPUT: \(input)")
         XCTAssertEqual(string, input)
     }
     
@@ -142,9 +161,9 @@ class TryMyAppTests: XCTestCase {
         
         do {
             let data = try encoder.encode(trialSettings)
-            try data.write(to: TryMyApp.settingsURL, options: .atomicWrite)
+            try data.write(to: tryMyApp.settingsFile, options: .atomicWrite)
             
-            let loadedSettings = try TryMyApp.loadSettings()
+            let loadedSettings = try tryMyApp.loadSettings()
             
             XCTAssertEqual(trialSettings, loadedSettings)
         } catch {
@@ -153,13 +172,10 @@ class TryMyAppTests: XCTestCase {
     }
     
     func testLoadSettingsWithoutSavedFile() {
-        let timeTraveler = TimeTraveler()
-        
         let defaultSettings = TrialSettings(dateInstalled: timeTraveler.date)
-        TryMyApp.dateGenerator = timeTraveler.generateDate
         
         do {
-            let loadedSettings = try TryMyApp.loadSettings()
+            let loadedSettings = try tryMyApp.loadSettings()
             
             XCTAssertEqual(defaultSettings, loadedSettings)
         } catch {
@@ -168,7 +184,7 @@ class TryMyAppTests: XCTestCase {
     }
     
     func testChangeTrialPeriodShouldUpdateDateExpired() {
-        var trialSettings = TrialSettings(dateInstalled: dateInstalled, trialPeriodInDays: Constants.Default.days)
+        var trialSettings = TrialSettings(dateInstalled: dateInstalled, trialPeriodInDays: 7)
         let newDays = 30
         let expectedDate = createDate(byAddingDays: newDays, to: dateInstalled)
         
@@ -182,9 +198,9 @@ class TryMyAppTests: XCTestCase {
         trialSettings.trialPeriodInDays = 17
         
         do {
-            try TryMyApp.saveSettings(settings: trialSettings)
+            try tryMyApp.saveSettings(settings: trialSettings)
             
-            let loadedSettings = try TryMyApp.loadSettings()
+            let loadedSettings = try tryMyApp.loadSettings()
             XCTAssertEqual(trialSettings, loadedSettings)
         } catch {
             XCTFail("Failed to load or save settings: \(error)")
@@ -195,42 +211,24 @@ class TryMyAppTests: XCTestCase {
         var trialSettings = TrialSettings()
         trialSettings.trialPeriodInDays = 17
         removeTestDirectory()
+        let settingsDirectoryPath = tryMyApp.settingsFile.deletingLastPathComponent().path
         
         do {
-            try TryMyApp.saveSettings(settings: trialSettings)
+            try tryMyApp.saveSettings(settings: trialSettings)
             
-            XCTAssertTrue(fileManager.fileExists(atPath: TryMyApp.settingsDirectory.path))
-            XCTAssertTrue(fileManager.fileExists(atPath: TryMyApp.settingsURL.path))
+            XCTAssertTrue(fileManager.fileExists(atPath: settingsDirectoryPath))
+            XCTAssertTrue(fileManager.fileExists(atPath: tryMyApp.settingsFile.path))
         } catch {
             XCTFail("Failed to create save folder: \(error)")
         }
     }
     
-    /// A testing class to step forward in time so that we can
-    // verify date logic
-    class TimeTraveler {
-        var date = Date()
-
-        func generateDate() -> Date {
-            return date
-        }
-        
-        func timeTravel(bySeconds seconds: TimeInterval) {
-            date = date.addingTimeInterval(seconds)
-        }
-    }
-    
-    /// Testing time based logic requires the ability to share the same date, or
-    /// method for generating dates
     func testLoadSettingsCreatesDefaultIfItDoesNotExist() {
-        let timeTraveler = TimeTraveler()
-        TryMyApp.dateGenerator = timeTraveler.generateDate
-        var expectedSettings = TrialSettings(dateInstalled: timeTraveler.date)
-        expectedSettings.trialPeriodInDays = Constants.Default.days
+        let expectedSettings = TrialSettings(dateInstalled: timeTraveler.date)
         removeTestDirectory()
         
         do {
-            let loadedSettings = try TryMyApp.loadSettings()
+            let loadedSettings = try tryMyApp.loadSettings()
             
             XCTAssertEqual(expectedSettings, loadedSettings)
         } catch {
@@ -238,8 +236,31 @@ class TryMyAppTests: XCTestCase {
         }
     }
     
+    func testTrialSettingsIsNotExpiredOnStart() {
+        let settings = TrialSettings(dateInstalled: timeTraveler.date, trialPeriodInDays: days)
+        try! tryMyApp.saveSettings(settings: settings)
+        
+        XCTAssertFalse(try! tryMyApp.isExpired())
+    }
     
-    /// TODO:
+    func testTrialSettingsIsNotExpiredAfter7Days() {
+        let settings = TrialSettings(dateInstalled: timeTraveler.date, trialPeriodInDays: days)
+        try! tryMyApp.saveSettings(settings: settings)
+        timeTraveler.timeTravel(byDays: 7)
+        
+        XCTAssertFalse(try! tryMyApp.isExpired())
+    }
+    
+    func testTrialSettingsIsExpiredAfter7DaysPlus1Second() {
+        let settings = TrialSettings(dateInstalled: timeTraveler.date, trialPeriodInDays: days)
+        try! tryMyApp.saveSettings(settings: settings)
+        timeTraveler.timeTravel(byDays: 7)
+        timeTraveler.timeTravel(bySeconds: 1)
+        
+        XCTAssertTrue(try! tryMyApp.isExpired())
+        
+    }
+    
     /// TODO: App Load from disk
     /// TODO: App Save to disk on first start (init)
     /// TODO: If already saved, then load and check valid

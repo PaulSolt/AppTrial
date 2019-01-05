@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		BD311AD521C95E7D000F9486 /* TryMyApp.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = BDC1C3AC21C95ABC008342F6 /* TryMyApp.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		BDAADFC421CB1E9D003A0B16 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDAADFC321CB1E9D003A0B16 /* Constants.swift */; };
 		BDC1C3B021C95ABC008342F6 /* TryMyApp.h in Headers */ = {isa = PBXBuildFile; fileRef = BDC1C3AE21C95ABC008342F6 /* TryMyApp.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		BDC1C3B821C95AE8008342F6 /* TryMyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD9F1EB721BCAA5E003516CD /* TryMyApp.swift */; };
 		BDC1C3C021C95B08008342F6 /* TryMyAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC1C3BF21C95B08008342F6 /* TryMyAppTests.swift */; };
@@ -53,7 +52,6 @@
 /* Begin PBXFileReference section */
 		BD3D5D0621BC7E7E00076919 /* DateLogic.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = DateLogic.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		BD9F1EB721BCAA5E003516CD /* TryMyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TryMyApp.swift; sourceTree = "<group>"; };
-		BDAADFC321CB1E9D003A0B16 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		BDC1C3AC21C95ABC008342F6 /* TryMyApp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TryMyApp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		BDC1C3AE21C95ABC008342F6 /* TryMyApp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TryMyApp.h; sourceTree = "<group>"; };
 		BDC1C3AF21C95ABC008342F6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -128,7 +126,6 @@
 			children = (
 				BDC1C3AE21C95ABC008342F6 /* TryMyApp.h */,
 				BD9F1EB721BCAA5E003516CD /* TryMyApp.swift */,
-				BDAADFC321CB1E9D003A0B16 /* Constants.swift */,
 				BDC1C3AF21C95ABC008342F6 /* Info.plist */,
 			);
 			path = TryMyApp;
@@ -299,7 +296,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BDC1C3B821C95AE8008342F6 /* TryMyApp.swift in Sources */,
-				BDAADFC421CB1E9D003A0B16 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

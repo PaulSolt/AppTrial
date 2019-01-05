@@ -8,8 +8,6 @@
 
 import Foundation
 
-// Helper functions
-
 /// Creates a path to the Application Support folder
 /// On Mac apps it should be of the form:
 /// `/Users/paulsolt/Library/Containers/com.PaulSolt.Mac-Trial-Demo/Data/Library/Application%20Support/`
@@ -17,103 +15,112 @@ import Foundation
 /// In unit tests it will be:
 /// `/Users/paulsolt/Library/Application%20Support/`
 ///
-func applicationSupportURL(isTestDirectory: Bool = isUnitTest()) -> URL {
+func applicationSupportURL() -> URL {
     return try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-}
-
-/// Helper to know when running a unit test versus test code or actual code
-/// in an app bundle
-func isUnitTest() -> Bool {
-    if ProcessInfo.processInfo.environment.keys.contains("XCTestConfigurationFilePath") {
-        return true
-    }
-    return false
 }
 
 typealias DateGenerator = () -> Date
 
-open class TryMyApp {
+fileprivate let settingsDirectory = "settings"
+fileprivate let settingsFilename = "settings.json"
+fileprivate let defaultDays = 7
 
-    static var dateGenerator: DateGenerator = Date.init
+open class TryMyApp {
     
-    // TODO: Doesn't do anything ... should these things not be static?
-    public init(settingsDirectory: URL = settingsDirectory) {
+    // TODO: refactor constnats to this file
+    
+
+    var dateGenerator: DateGenerator = Date.init
+    var settingsFile: URL = TryMyApp.defaultSettingsFile
+
+    private var settings: TrialSettings!
+    
+    public init() {
+        // Load settings or create a new settings if it does not exist
+        do {
+            settings = try loadSettings()
+        } catch {
+            print("Error: failed to load settings: \(settingsFile)")
+            settings = createDefaultSettings()
+        }
         
-    }
-    
-    /// The settings directory is stored in the Application Support folder
-    public static var settingsDirectory: URL = applicationSupportURL().appendingPathComponent(Constants.settingsDirectory, isDirectory: true)
-//    public static var settingsDirectory: URL = {
-//        return applicationSupportURL().appendingPathComponent(Constants.settingsDirectory, isDirectory: true)
-//    }()
-    
-    /// The file location of the saved state
-    public static var settingsURL: URL = {
-        return settingsDirectory.appendingPathComponent(Constants.settingsFilename)
-    }()
-    
-    public static func loadSettings() throws -> TrialSettings {
-        if settingsExists() {
-            let data = try loadSettingsFrom(url: settingsURL)
-            return try decodeSettings(from: data)
-        } else {
-            return createDefaultSettings()
+        // Save settings file to disk on start
+        do {
+            try saveSettings(settings: settings)
+        } catch {
+            print("Error: failed to save settings: \(settingsFile)")
         }
     }
     
-    // QUESTION: for boolean checks, should they read better,  or should I use verbs
-    // in more familar patters?
-    // settingsDoesExist() vs. isThereSavedSettings vs. isFirstTimeLaunched ...?
+    private static var defaultDirectory: URL = applicationSupportURL().appendingPathComponent(settingsDirectory, isDirectory: true)
     
-    fileprivate static func settingsExists() -> Bool {
-        return FileManager.default.fileExists(atPath: settingsURL.path)
+    private static var defaultSettingsFile: URL = defaultDirectory.appendingPathComponent(settingsFilename)
+    
+    public func isExpired() -> Bool {
+        return dateGenerator() > settings.dateExpired
     }
     
-    fileprivate static func loadSettingsFrom(url: URL) throws -> Data {
-        return try Data(contentsOf: settingsURL)
+    public func dateExpired() -> Date {
+        return settings.dateExpired
     }
     
-    fileprivate static func decodeSettings(from data: Data) throws -> TrialSettings {
+    public func loadSettings() throws -> TrialSettings {
+        if settingsExists() {
+            let data = try loadSettingsFrom(url: settingsFile)
+            return try decodeSettings(from: data)
+        }
+        return createDefaultSettings()
+    }
+    
+    fileprivate func settingsExists() -> Bool {
+        return FileManager.default.fileExists(atPath: settingsFile.path)
+    }
+    
+    fileprivate func loadSettingsFrom(url: URL) throws -> Data {
+        return try Data(contentsOf: settingsFile)
+    }
+    
+    fileprivate func decodeSettings(from data: Data) throws -> TrialSettings {
         let decoder = JSONDecoder()
         return try decoder.decode(TrialSettings.self, from: data)
     }
  
-    fileprivate static func createDefaultSettings() -> TrialSettings {
-        return TrialSettings(dateInstalled: dateGenerator(), trialPeriodInDays: Constants.Default.days)
+    fileprivate func createDefaultSettings() -> TrialSettings {
+        return TrialSettings(dateInstalled: dateGenerator(), trialPeriodInDays: defaultDays)
     }
     
-    public static func saveSettings(settings: TrialSettings) throws {
+    public func saveSettings(settings: TrialSettings) throws {
         let data = try encodeSettings(settings: settings)
         try createSettingsDirectoryIfMissing()
-        try saveSettings(data: data, to: settingsURL)
+        try saveSettings(data: data, to: settingsFile)
     }
     
-    fileprivate static func encodeSettings(settings: TrialSettings) throws -> Data {
+    fileprivate func encodeSettings(settings: TrialSettings) throws -> Data {
         let encoder = JSONEncoder()
         return try encoder.encode(settings)
     }
     
-    fileprivate static func createSettingsDirectoryIfMissing() throws {
+    fileprivate func createSettingsDirectoryIfMissing() throws {
         if !settingsDirectoryExists() {
             try createSettingsDirectory()
         }
     }
     
-    fileprivate static func settingsDirectoryExists() -> Bool {
-        return FileManager.default.fileExists(atPath: settingsDirectory.path)
+    fileprivate func settingsDirectoryExists() -> Bool {
+        let settingsDirectoryPath = settingsFile.deletingLastPathComponent().path
+        return FileManager.default.fileExists(atPath: settingsDirectoryPath)
     }
     
-    fileprivate static func createSettingsDirectory() throws {
-        try FileManager.default.createDirectory(atPath: TryMyApp.settingsDirectory.path, withIntermediateDirectories: true, attributes: nil)
+    fileprivate func createSettingsDirectory() throws {
+        let settingsDirectoryPath = settingsFile.deletingLastPathComponent().path
+        try FileManager.default.createDirectory(atPath: settingsDirectoryPath, withIntermediateDirectories: true, attributes: nil)
     }
 
-    fileprivate static func saveSettings(data: Data, to url: URL) throws {
+    fileprivate func saveSettings(data: Data, to url: URL) throws {
         try data.write(to: url, options: .atomic)
     }
 }
 
-/// NOTE: In some situtations with different calendars or end time scenarios
-/// this may fail, but it should work for small offsets between 7-365 days
 func createDate(byAddingDays days: Int, to date: Date) -> Date {
     return Calendar.current.date(byAdding: .day, value: days, to: date)!
 }
@@ -128,7 +135,7 @@ public struct TrialSettings: Codable, Equatable {
         }
     }
     
-    init(dateInstalled: Date = Date(), trialPeriodInDays days: Int = Constants.Default.days) {
+    init(dateInstalled: Date = Date(), trialPeriodInDays days: Int = defaultDays) {
         self.dateInstalled = dateInstalled
         self.trialPeriodInDays = days
         self.dateExpired = createDate(byAddingDays: days, to: dateInstalled)
