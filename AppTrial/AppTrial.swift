@@ -1,6 +1,6 @@
 //
-//  MacTrial.swift
-//  Mac Trial Library
+//  AppTrial.swift
+//  AppTrial Library
 //
 //  Created by Paul Solt on 12/8/18.
 //  Copyright © 2018 Paul Solt. All rights reserved.
@@ -26,7 +26,7 @@ fileprivate let defaultDays = 7
 fileprivate let defaultDirectory: URL = applicationSupportURL().appendingPathComponent(settingsDirectory, isDirectory: true)
 fileprivate let defaultSettingsFile: URL = defaultDirectory.appendingPathComponent(settingsFilename)
 
-open class TryMyApp {
+open class AppTrial {
     var dateGenerator: DateGenerator = Date.init
     var settingsFile: URL = defaultSettingsFile
     private(set) var settings: TrialSettings = TrialSettings()

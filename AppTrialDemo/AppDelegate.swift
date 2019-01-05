@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  TryMyAppDemo
+//  AppTrialDemo
 //
 //  Created by Paul Solt on 12/18/18.
 //  Copyright © 2018 Paul Solt. All rights reserved.
