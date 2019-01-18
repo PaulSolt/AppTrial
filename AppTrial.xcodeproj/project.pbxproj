@@ -16,6 +16,7 @@
 		BDC1C3D121C95B6E008342F6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC1C3D021C95B6E008342F6 /* ViewController.swift */; };
 		BDC1C3D321C95B6F008342F6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BDC1C3D221C95B6F008342F6 /* Assets.xcassets */; };
 		BDC1C3D621C95B6F008342F6 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BDC1C3D421C95B6F008342F6 /* Main.storyboard */; };
+		BDCDC25C21F116FD00F861BC /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = BDCDC25B21F116FD00F861BC /* README.md */; };
 		BDE4C94D21E25AE5004F15BF /* ShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE4C94C21E25AE5004F15BF /* ShareView.swift */; };
 		BDE4C94F21E25AFB004F15BF /* TimeTraveler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE4C94E21E25AFB004F15BF /* TimeTraveler.swift */; };
 		BDE4C95021E25B17004F15BF /* TimeTraveler.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDE4C94E21E25AFB004F15BF /* TimeTraveler.swift */; };
@@ -68,6 +69,7 @@
 		BDC1C3D521C95B6F008342F6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BDC1C3D721C95B6F008342F6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BDC1C3D821C95B6F008342F6 /* AppTrialDemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AppTrialDemo.entitlements; sourceTree = "<group>"; };
+		BDCDC25B21F116FD00F861BC /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		BDE4C94C21E25AE5004F15BF /* ShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareView.swift; sourceTree = "<group>"; };
 		BDE4C94E21E25AFB004F15BF /* TimeTraveler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeTraveler.swift; sourceTree = "<group>"; };
 		BDE4C95121E26241004F15BF /* Icon256.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon256.png; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 		BD3D5CE721BC7E1800076919 = {
 			isa = PBXGroup;
 			children = (
+				BDCDC25B21F116FD00F861BC /* README.md */,
 				BDC1C3CD21C95B6E008342F6 /* AppTrialDemo */,
 				BDC1C3AD21C95ABC008342F6 /* AppTrial */,
 				BDC1C3BE21C95B08008342F6 /* AppTrialTests */,
@@ -293,6 +296,7 @@
 			files = (
 				BDE4C95221E26241004F15BF /* Icon256.png in Resources */,
 				BDC1C3D321C95B6F008342F6 /* Assets.xcassets in Resources */,
+				BDCDC25C21F116FD00F861BC /* README.md in Resources */,
 				BDC1C3D621C95B6F008342F6 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

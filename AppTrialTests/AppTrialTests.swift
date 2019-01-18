@@ -28,8 +28,7 @@ class AppTrialTests: XCTestCase {
         dateInstalled = Date()
         fileManager = FileManager()
         timeTraveler = TimeTraveler()
-        appTrial = AppTrial()
-        appTrial.dateGenerator = timeTraveler.generateDate
+        appTrial = AppTrial(dateGenerator: timeTraveler.generateDate)
         
         setupTestDirectory()
     }
@@ -262,27 +261,115 @@ class AppTrialTests: XCTestCase {
         }
     }
     
-    func testDaysRemainingAfterTimeTraveling() {
-        timeTraveler.timeTravel(byDays: 2)
-        XCTAssertEqual(5, appTrial.daysRemaining())
-        
-        timeTraveler.timeTravel(bySeconds: 1)
-        XCTAssertEqual(4, appTrial.daysRemaining())
-
-        timeTraveler.timeTravel(bySeconds: -2)
-        XCTAssertEqual(5, appTrial.daysRemaining())
-
-        timeTraveler.timeTravel(bySeconds: 1)
-        XCTAssertEqual(5, appTrial.daysRemaining())
-
-        timeTraveler.timeTravel(byDays: 2)
-        XCTAssertEqual(3, appTrial.daysRemaining())
-        
-        timeTraveler.timeTravel(byDays: 3)
-        XCTAssertEqual(0, appTrial.daysRemaining())
-        
-        timeTraveler.timeTravel(byDays: 1)
-        timeTraveler.timeTravel(bySeconds: 1)
-        XCTAssertEqual(-1, appTrial.daysRemaining())
+//    func testDaysRemainingAfterTimeTraveling() {
+//        timeTraveler.timeTravel(byDays: 2)
+//        XCTAssertEqual(5, appTrial.daysRemaining())
+//
+//        timeTraveler.timeTravel(bySeconds: 1)
+//        XCTAssertEqual(4, appTrial.daysRemaining())
+//
+//        timeTraveler.timeTravel(bySeconds: -2)
+//        XCTAssertEqual(5, appTrial.daysRemaining())
+//
+//        timeTraveler.timeTravel(bySeconds: 1)
+//        XCTAssertEqual(5, appTrial.daysRemaining())
+//
+//        timeTraveler.timeTravel(byDays: 2)
+//        XCTAssertEqual(3, appTrial.daysRemaining())
+//
+//        timeTraveler.timeTravel(byDays: 3)
+//        XCTAssertEqual(0, appTrial.daysRemaining())
+//
+//        timeTraveler.timeTravel(byDays: 1)
+//        timeTraveler.timeTravel(bySeconds: 1)
+//        XCTAssertEqual(-1, appTrial.daysRemaining())
+//    }
+//
+//    func testDaysRemainingIncludesPartialTime() {
+//        let seconds: TimeInterval = 60 * 60 * 12
+//        timeTraveler.timeTravel(bySeconds: seconds)
+//
+//        XCTAssertEqual(Double(appTrial.daysRemaining()), 6.5, accuracy: 0.1)
+//
+//    }
+    
+    func createFixedDate() -> Date {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let components = DateComponents(year: 2018, month: 1, day: 18)
+        return calendar.date(from: components)!
     }
+    
+    func testDaysRemainingExpiresInAbout7Days() {
+        timeTraveler.date = createFixedDate()
+        appTrial = AppTrial(dateGenerator: timeTraveler.generateDate)
+        
+        XCTAssertEqual("about 7 days", appTrial.daysRemaining())
+    }
+    
+    func testDateInstalled() {
+        XCTAssertEqual(appTrial.dateInstalled(), appTrial.settings.dateInstalled)
+    }
+    
+    func testTotalDays() {
+        XCTAssertEqual(appTrial.totalDays(), appTrial.settings.trialPeriodInDays)
+    }
+    
+    func testDaysRemainingExpiresInAbout6Days12Hours() {
+        let date = createFixedDate()
+        timeTraveler.date = date
+        appTrial = AppTrial(dateGenerator: timeTraveler.generateDate)
+        
+        timeTraveler.timeTravel(bySeconds: 60 * 60 * 12)
+
+        XCTAssertEqual("about 6 days, 12 hours", appTrial.daysRemaining())
+    }
+    
+    func testDaysRemainingExpiresInAbout12Hours() {
+        let date = createFixedDate()
+        timeTraveler.date = date
+        appTrial = AppTrial(dateGenerator: timeTraveler.generateDate)
+        
+        timeTraveler.timeTravel(bySeconds: 60 * 60 * 12)
+        timeTraveler.timeTravel(byDays: 6)
+        
+        print("dateGenerator: \(appTrial.dateGenerator())")
+        
+        XCTAssertEqual("about 12 hours", appTrial.daysRemaining())
+    }
+    
+    func testDaysRemainingExpired() {
+        let date = createFixedDate()
+        timeTraveler.date = date
+        appTrial = AppTrial(dateGenerator: timeTraveler.generateDate)
+        
+//        timeTraveler.timeTravel(bySeconds: 60 * 60 * 12)
+        timeTraveler.timeTravel(byDays: 7)
+        timeTraveler.timeTravel(bySeconds: 1)
+        
+        print("dateGenerator: \(appTrial.dateGenerator())")
+        
+        XCTAssertEqual("0 days", appTrial.daysRemaining())
+    }
+    
+    func testExpireTrialExpiresInMemoryAndSaved() {
+        appTrial.expireTrial()
+        
+        XCTAssertTrue(appTrial.isExpired())
+        
+        appTrial.reloadFromDisk()
+        XCTAssertTrue(appTrial.isExpired())
+    
+    }
+    
+//    func testResetTrialPeriod() {
+//
+//        appTrial.expireTrial()
+//
+//        appTrial.resetTrialPeriod()
+//
+//        XCTAssertEqual("about 7 day.", appTrial.daysRemaining())
+//
+//        XCTAssertTrue(<#T##expression: Bool##Bool#>)
+//    }
 }

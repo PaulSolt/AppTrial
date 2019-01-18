@@ -18,7 +18,7 @@ func applicationSupportURL() -> URL {
     return try! FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
 }
 
-typealias DateGenerator = () -> Date
+public typealias DateGenerator = () -> Date
 
 fileprivate let settingsDirectory = "settings"
 fileprivate let settingsFilename = "settings.json"
@@ -27,13 +27,27 @@ fileprivate let defaultDirectory: URL = applicationSupportURL().appendingPathCom
 fileprivate let defaultSettingsFile: URL = defaultDirectory.appendingPathComponent(settingsFilename)
 
 open class AppTrial {
-    var dateGenerator: DateGenerator = Date.init
+    var dateGenerator: DateGenerator
+    var formatter: DateComponentsFormatter
+    
     var settingsFile: URL = defaultSettingsFile
     private(set) var settings: TrialSettings = TrialSettings()
     
-    public init() {
+    public init(dateGenerator: @escaping DateGenerator = Date.init,
+                formatter: DateComponentsFormatter = defaultDateComponentFormatter()) {
+        self.dateGenerator = dateGenerator
+        self.formatter = formatter
+        
         loadOrCreateSettings()
         saveToDisk()
+    }
+    
+    public static func defaultDateComponentFormatter() -> DateComponentsFormatter {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.includesApproximationPhrase = true
+        formatter.allowedUnits = [.day, .hour]
+        return formatter
     }
     
     public func isExpired() -> Bool {
@@ -43,14 +57,42 @@ open class AppTrial {
     public func dateExpired() -> Date {
         return settings.dateExpired
     }
+
+    public func dateInstalled() -> Date {
+        return settings.dateInstalled
+    }
     
     public func extendTrial(byAdding days: Int) {
         settings = settings.extended(byAddingDays: days)
         saveToDisk()
     }
     
-    public func daysRemaining() -> Int {
-        return daysBetween(startDate: dateGenerator(), endDate: settings.dateExpired)
+    public func daysRemaining() -> String {
+        var result = ""
+        if !isExpired() {
+            formatter.includesApproximationPhrase = true
+            formatter.allowedUnits = [.day, .hour]
+            let duration = formatter.string(from: dateGenerator(), to: dateExpired())!
+            result = duration.lowercased()
+        } else {
+            formatter.includesApproximationPhrase = false
+            formatter.allowedUnits = [.day]
+            let duration = formatter.string(from: 0)!
+            result = duration.lowercased()
+        }
+        return result
+    }
+    
+//    public func daysRemaining() -> String {
+//
+//    }
+    
+//    public func daysRemaining() -> Int {
+//        return daysBetween(startDate: dateGenerator(), endDate: settings.dateExpired)
+//    }
+    
+    public func totalDays() -> Int {
+        return settings.trialPeriodInDays
     }
     
     private func loadOrCreateSettings() {
@@ -62,6 +104,22 @@ open class AppTrial {
         }
     }
     
+    public func reloadFromDisk() {
+        if let settings = try? loadSettings() {
+            self.settings = settings
+        }
+    }
+    
+    public func reset() {
+        
+    }
+    
+    public func expireTrial() {
+//        settings = createDefaultSettings()
+        settings.trialPeriodInDays = -1
+        saveToDisk()
+    }
+
     private func saveToDisk() {
         do {
             try saveSettings(settings: settings)
@@ -127,23 +185,27 @@ open class AppTrial {
     }
 }
 
+
 /// Settings structure for tracking trial period in an app
 public struct TrialSettings: Codable, Equatable {
-    let dateInstalled: Date
-    private(set) var dateExpired: Date
-    var trialPeriodInDays: Int {
+    public static let defaultDurationInDays = 7
+
+    public let dateInstalled: Date
+    public private(set) var dateExpired: Date
+    public var trialPeriodInDays: Int {
         didSet {
             self.dateExpired = createDate(byAddingDays: trialPeriodInDays, to: dateInstalled)
         }
     }
     
-    init(dateInstalled: Date = Date(), trialPeriodInDays days: Int = defaultDays) {
+    public init(dateInstalled: Date = Date(), trialPeriodInDays days: Int = defaultDurationInDays) {
+
         self.dateInstalled = dateInstalled
         self.trialPeriodInDays = days
         self.dateExpired = createDate(byAddingDays: days, to: dateInstalled)
     }
     
-    func extended(byAddingDays days: Int) -> TrialSettings {
+    public func extended(byAddingDays days: Int) -> TrialSettings {
         let duration = trialPeriodInDays + days
         return TrialSettings(dateInstalled: dateInstalled, trialPeriodInDays: duration)
     }
@@ -153,7 +215,7 @@ func createDate(byAddingDays days: Int, to date: Date) -> Date {
     return Calendar.current.date(byAdding: .day, value: days, to: date)!
 }
 
-func daysBetween(startDate: Date, endDate: Date) -> Int {
-    let components = Calendar.current.dateComponents([.day], from: startDate, to: endDate)
-    return components.day!
-}
+//func daysBetween(startDate: Date, endDate: Date) -> Int? {
+//    let components = Calendar.current.dateComponents([.day], from: startDate, to: endDate)
+//    return components.day
+//}

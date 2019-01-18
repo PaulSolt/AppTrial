@@ -63,12 +63,10 @@ class ShareView: NSViewController {
     
     override func viewDidAppear() {
         if let window = view.window {
-            window.styleMask = [.borderless] //.remove(.resizable, .)
+            window.styleMask = [.borderless]
             window.isMovable = true
             window.isMovableByWindowBackground = true
-            window.center()
         }
-        
         
         super.viewDidAppear()
     }
@@ -92,18 +90,12 @@ class ShareView: NSViewController {
         cancelButton = createCancelButton(withTitle: model.cancelButtonTitle)
         
         imageView = createImageView(withImage: model.image)
-        //        actionButton.
-//        view.addSubview(actionButton)
-        
-//        actionButton.pin(to: view, margin: 20)
         
         let buttonPanel = NSStackView(views: [actionButton, cancelButton])
         buttonPanel.orientation = .vertical
         buttonPanel.distribution = .fill
         buttonPanel.spacing = 8
-        
-//        actionButton.widthAnchor.constraint(equalTo: cancelButton.widthAnchor, multiplier: 1.0)
-        
+                
         let stackView = NSStackView(views: [imageView,
                                             titleLabel,
                                             messageLabel,
@@ -120,13 +112,21 @@ class ShareView: NSViewController {
         actionButton.pinEqualWidths(to: [cancelButton])
         stackView.pin(to: view, margin: 20)
 
-        
-//        view.window?.contentLayoutGuide
-//        let defaultSpacing: CGFloat = 20
-//        let margins = view.layoutGuides.first
+//        let flag = createTitleFlag(withTitle: model.actionButtonTitle)
+//        view.addSubview(flag)
+//
+//        flag.pin(to: view, topRightCornerMargin: 5)
 
-//        view.pin(to: stackView, margin: 20)
-//        stackView.pin(to: view, margin: 20)
+    }
+    
+    fileprivate func createTitleFlag(withTitle title: String) -> NSTextField {
+        let label = NSTextField(labelWithString: "Expires on 1/20/19")
+        label.wantsLayer = true
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.backgroundColor = .red
+        label.alignment = .right
+        label.layer?.backgroundColor = NSColor.red.cgColor
+        return label
     }
     
     fileprivate func createImageView(withImage image: NSImage) -> NSImageView {
@@ -175,6 +175,13 @@ class ShareView: NSViewController {
 }
 
 public extension NSView {
+    
+    public func pin(to view: NSView, topRightCornerMargin margin: CGFloat) {
+        NSLayoutConstraint.activate([
+            topAnchor.constraint(equalTo: view.topAnchor, constant: margin),
+            trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -margin)
+            ])
+    }
     public func pin(to view: NSView, margin: CGFloat) {
         NSLayoutConstraint.activate([
             topAnchor.constraint(equalTo: view.topAnchor, constant: margin),
