@@ -111,22 +111,6 @@ class ShareView: NSViewController {
         imageView.pinAspectRatio(1.0, width: 128)
         actionButton.pinEqualWidths(to: [cancelButton])
         stackView.pin(to: view, margin: 20)
-
-//        let flag = createTitleFlag(withTitle: model.actionButtonTitle)
-//        view.addSubview(flag)
-//
-//        flag.pin(to: view, topRightCornerMargin: 5)
-
-    }
-    
-    fileprivate func createTitleFlag(withTitle title: String) -> NSTextField {
-        let label = NSTextField(labelWithString: "Expires on 1/20/19")
-        label.wantsLayer = true
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.backgroundColor = .red
-        label.alignment = .right
-        label.layer?.backgroundColor = NSColor.red.cgColor
-        return label
     }
     
     fileprivate func createImageView(withImage image: NSImage) -> NSImageView {

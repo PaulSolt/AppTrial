@@ -352,24 +352,27 @@ class AppTrialTests: XCTestCase {
         XCTAssertEqual("0 days", appTrial.daysRemaining())
     }
     
-    func testExpireTrialExpiresInMemoryAndSaved() {
+    func testExpireTrialExpiresInMemoryAndFromDisk() {
         appTrial.expireTrial()
         
         XCTAssertTrue(appTrial.isExpired())
         
         appTrial.reloadFromDisk()
         XCTAssertTrue(appTrial.isExpired())
-    
     }
     
-//    func testResetTrialPeriod() {
-//
-//        appTrial.expireTrial()
-//
-//        appTrial.resetTrialPeriod()
-//
-//        XCTAssertEqual("about 7 day.", appTrial.daysRemaining())
-//
-//        XCTAssertTrue(<#T##expression: Bool##Bool#>)
-//    }
+    func testResetTrialPeriodInMemoryAndFromDisk() {
+        let dateExpired = createDate(byAddingDays: 7, to: timeTraveler.date)
+        appTrial.expireTrial()
+
+        appTrial.resetTrialPeriod()
+
+        XCTAssertEqual(timeTraveler.date, appTrial.dateInstalled())
+        XCTAssertEqual(dateExpired, appTrial.dateExpired())
+  
+        appTrial.reloadFromDisk()
+        
+        XCTAssertEqual(timeTraveler.date, appTrial.dateInstalled())
+        XCTAssertEqual(dateExpired, appTrial.dateExpired())
+    }
 }

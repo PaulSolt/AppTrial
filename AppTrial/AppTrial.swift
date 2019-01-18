@@ -22,7 +22,6 @@ public typealias DateGenerator = () -> Date
 
 fileprivate let settingsDirectory = "settings"
 fileprivate let settingsFilename = "settings.json"
-fileprivate let defaultDays = 7
 fileprivate let defaultDirectory: URL = applicationSupportURL().appendingPathComponent(settingsDirectory, isDirectory: true)
 fileprivate let defaultSettingsFile: URL = defaultDirectory.appendingPathComponent(settingsFilename)
 
@@ -83,14 +82,6 @@ open class AppTrial {
         return result
     }
     
-//    public func daysRemaining() -> String {
-//
-//    }
-    
-//    public func daysRemaining() -> Int {
-//        return daysBetween(startDate: dateGenerator(), endDate: settings.dateExpired)
-//    }
-    
     public func totalDays() -> Int {
         return settings.trialPeriodInDays
     }
@@ -110,12 +101,12 @@ open class AppTrial {
         }
     }
     
-    public func reset() {
-        
+    public func resetTrialPeriod() {
+        settings = createDefaultSettings()
+        saveToDisk()
     }
     
     public func expireTrial() {
-//        settings = createDefaultSettings()
         settings.trialPeriodInDays = -1
         saveToDisk()
     }
@@ -150,7 +141,7 @@ open class AppTrial {
     }
  
     fileprivate func createDefaultSettings() -> TrialSettings {
-        return TrialSettings(dateInstalled: dateGenerator(), trialPeriodInDays: defaultDays)
+        return TrialSettings(dateInstalled: dateGenerator())
     }
     
     public func saveSettings(settings: TrialSettings) throws {

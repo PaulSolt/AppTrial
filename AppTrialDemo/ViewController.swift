@@ -18,69 +18,59 @@ class ViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        reloadDates()
+    }
+    
+    func reloadDates() {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .medium
-        
+
         dateInstalled.stringValue = formatter.string(from: trial.dateInstalled())
         dateExpired.stringValue = formatter.string(from: trial.dateExpired())
-        
-        
-        if trial.isExpired() {
-            print("Expired Trial: \(trial.dateExpired())\n Now \(Date())")
-            print("The Super Easy Timer trial period has expired.")
-        } else {
-            
-//            print("The trial expires in \(trial.daysRemaining()) days")
-            
-            print("Not expired: \(trial.dateExpired())\n Now: \(Date())")
-        }
-        
-        
-//        view.translatesAutoresizingMaskIntoConstraints = false
-
     }
     
     override func viewDidAppear() {
         view.window?.center()
         
-//        showDialog()
-        
-//        showAlert()
     }
     
-    func saveExpired() {
-        let trialSettings = TrialSettings(dateInstalled: Date(timeIntervalSinceNow: -1), trialPeriodInDays: 0)
-        try? trial.saveSettings(settings: trialSettings)
+    @IBAction func resetButtonPressed(_ sender: Any) {
+        trial.resetTrialPeriod()
+        reloadDates()
     }
     
-    func saveFreshInstall() {
-        let trialSettings = TrialSettings(dateInstalled: Date(), trialPeriodInDays: 7)
-        try? trial.saveSettings(settings: trialSettings)
+    @IBAction func expireTrialButtonPressed(_ sender: Any) {
+        trial.expireTrial()
+        reloadDates()
     }
     
+    @IBAction func showDialogButtonPressed(_ sender: Any) {
+        showDialog()
+    }
     
     func showDialog() {
         let image = NSImage(named: "Icon256")!
         
         // let presenter = ...
         
-        let expireString = trial.daysRemaining()
+//        let expireString = trial.daysRemaining()
+        var expireMessage = "Super Easy Timer trial expires in \(trial.daysRemaining())."
         
-        let model = Model(actionButtonTitle: "Share on Facebook",
-                          cancelButtonTitle: "No Thanks",
-                          message: "Share via Facebook to extend your trial by 7 days",
+        if trial.isExpired() {
+            expireMessage = "Super Easy Timer is expired."
+        }
+        
+        let model = Model(actionButtonTitle: "Open App Store",
+                          cancelButtonTitle: "Try the App",
+                          message: "Download the full app from the App Store",
                           image: image,
-                          windowTitle: "Super Eays Timer trial expires in \(expireString)")
+                          windowTitle: expireMessage)
         
 
         let shareView = ShareView(withModel: model, delegate: self)
         
-//        presentAsSheet(shareView)
-        presentAsModalWindow(shareView)
-//        present(shareView, animator: NSViewController.TransitionOptions.crossfade)
-            //(shareView)
-
+        presentAsSheet(shareView)
     }
 
     func showAlert() {
@@ -103,17 +93,12 @@ class ViewController: NSViewController {
 
 extension ViewController: ShareViewDelegate {
     func shareView(didPressActionButton shareView: ShareView) {
-        // TODO: share on social
-        // TODO: extend the beta
-        if trial.totalDays() < 21 {
-            trial.extendTrial(byAdding: 7)
-        }
         dismiss(shareView)
+        
+        // Do action here (or extend trial if they took action)
     }
     
     func shareView(didPressCancelButton shareView: ShareView) {
         dismiss(shareView)
     }
-    
-    
 }
