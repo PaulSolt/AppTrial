@@ -50,11 +50,6 @@ class ViewController: NSViewController {
     }
     
     func showDialog() {
-        let image = NSImage(named: "Icon256")!
-        
-        // let presenter = ...
-        
-//        let expireString = trial.daysRemaining()
         var expireMessage = "Super Easy Timer trial expires in \(trial.daysRemaining())."
         
         if trial.isExpired() {
@@ -64,12 +59,11 @@ class ViewController: NSViewController {
         let model = Model(actionButtonTitle: "Open App Store",
                           cancelButtonTitle: "Try the App",
                           message: "Download the full app from the App Store",
-                          image: image,
+                          image: NSImage(named: "Icon256")!,
                           windowTitle: expireMessage)
         
 
         let shareView = ShareView(withModel: model, delegate: self)
-        
         presentAsSheet(shareView)
     }
 

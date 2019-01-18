@@ -206,7 +206,3 @@ func createDate(byAddingDays days: Int, to date: Date) -> Date {
     return Calendar.current.date(byAdding: .day, value: days, to: date)!
 }
 
-//func daysBetween(startDate: Date, endDate: Date) -> Int? {
-//    let components = Calendar.current.dateComponents([.day], from: startDate, to: endDate)
-//    return components.day
-//}
